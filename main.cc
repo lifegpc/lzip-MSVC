@@ -23,6 +23,10 @@
 
 #define _FILE_OFFSET_BITS 64
 
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <algorithm>
 #include <cctype>
 #include <cerrno>
@@ -36,9 +40,36 @@
 #include <vector>
 #include <fcntl.h>
 #include <stdint.h>
+#if !HAVE_CONFIG_H || HAVE_UNISTD_H
 #include <unistd.h>
+#else if HAVE_IO_H
+#include <io.h>
+#define open _open
+#define close _close
+#define STDERR_FILENO _fileno(stderr)
+#define STDIN_FILENO _fileno(stdin)
+#define STDOUT_FILENO _fileno(stdout)
+#endif
+#if !HAVE_CONFIG_H || HAVE_UTIME_H
 #include <utime.h>
+#else if HAVE_SYS_UTIME_H
+#include <sys/utime.h>
+#endif
 #include <sys/stat.h>
+#ifdef _MSC_VER
+#define mode_t unsigned int
+int S_ISBLK(mode_t mode) { return 0; }
+#define S_ISFIFO S_ISBLK
+#define S_ISSOCK S_ISBLK
+
+int S_ISCHR(mode_t mode) {
+	return mode & _S_IFCHR;
+}
+
+int S_ISREG(mode_t mode) {
+	return mode & _S_IFREG;
+}
+#endif
 #if defined(__MSVCRT__) || defined(__OS2__) || defined(__DJGPP__)
 #include <io.h>
 #if defined(__MSVCRT__)
@@ -387,9 +418,13 @@ int open_instream2( const char * const name, struct stat * const in_statsp,
 
 bool open_outstream( const bool force, const bool protect )
   {
+#ifndef _WIN32
   const mode_t usr_rw = S_IRUSR | S_IWUSR;
   const mode_t all_rw = usr_rw | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
   const mode_t outfd_mode = protect ? usr_rw : all_rw;
+#else
+	const mode_t outfd_mode = _S_IWRITE | _S_IREAD;
+#endif
   int flags = O_CREAT | O_WRONLY | O_BINARY;
   if( force ) flags |= O_TRUNC; else flags |= O_EXCL;
 
@@ -410,7 +445,9 @@ bool open_outstream( const bool force, const bool protect )
 
 void set_signals( void (*action)(int) )
   {
+#ifndef _WIN32
   std::signal( SIGHUP, action );
+#endif
   std::signal( SIGINT, action );
   std::signal( SIGTERM, action );
   }
@@ -471,6 +508,7 @@ void close_and_set_permissions( const struct stat * const in_statsp )
   if( in_statsp )
     {
     const mode_t mode = in_statsp->st_mode;
+#ifndef _WIN32
     // fchown will in many cases return with EPERM, which can be safely ignored.
     if( fchown( outfd, in_statsp->st_uid, in_statsp->st_gid ) == 0 )
       { if( fchmod( outfd, mode ) != 0 ) warning = true; }
@@ -478,6 +516,7 @@ void close_and_set_permissions( const struct stat * const in_statsp )
       if( errno != EPERM ||
           fchmod( outfd, mode & ~( S_ISUID | S_ISGID | S_ISVTX ) ) != 0 )
         warning = true;
+#endif
     }
   if( close( outfd ) != 0 )
     {

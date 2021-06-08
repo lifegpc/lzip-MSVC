@@ -15,6 +15,10 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #define _FILE_OFFSET_BITS 64
 
 #include <algorithm>
@@ -25,7 +29,13 @@
 #include <string>
 #include <vector>
 #include <stdint.h>
+#if !HAVE_CONFIG_H || HAVE_UNISTD_H
 #include <unistd.h>
+#else if HAVE_IO_H
+#include <io.h>
+#define read _read
+#define write _write
+#endif
 
 #include "lzip.h"
 #include "decoder.h"

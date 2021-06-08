@@ -1,0 +1,35 @@
+#include <winver.h>
+#ifndef DEBUG
+#define VER_DEBUG 0
+#else
+#define VER_DEBUG VS_FF_DEBUG
+#endif
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     @LZIP_VERSION_MAJOR@,@LZIP_VERSION_MINOR@,0,0
+PRODUCTVERSION  @LZIP_VERSION_MAJOR@,@LZIP_VERSION_MINOR@,0,0
+FILEFLAGSMASK   VS_FF_DEBUG
+FILEFLAGS       VER_DEBUG
+FILEOS          VOS__WINDOWS32
+FILETYPE        VFT_APP
+FILESUBTYPE     VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "04090000"
+        BEGIN
+            VALUE "CompanyName",      "Antonio Diaz Diaz\0"
+            VALUE "FileDescription",  "Lzip is a lossless data compressor with a user interface similar to the one of gzip or bzip2.\0"
+            VALUE "FileVersion",      "@PROGVERSION@\0"
+            VALUE "InternalName",     "lzip\0"
+            VALUE "LegalCopyright",   "GNU GENERAL PUBLIC LICENSE v2\0"
+            VALUE "OriginalFilename", "lzip.exe\0"
+            VALUE "ProductName",      "lzip\0"
+            VALUE "ProductVersion",   "@PROGVERSION@\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 0
+    END
+END

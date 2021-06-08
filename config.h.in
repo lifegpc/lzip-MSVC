@@ -1,0 +1,5 @@
+#define PROGVERSION "@PROGVERSION@"
+#cmakedefine HAVE_UNISTD_H @HAVE_UNISTD_H@
+#cmakedefine HAVE_IO_H @HAVE_IO_H@
+#cmakedefine HAVE_UTIME_H @HAVE_UTIME_H@
+#cmakedefine HAVE_SYS_UTIME_H @HAVE_SYS_UTIME_H@
